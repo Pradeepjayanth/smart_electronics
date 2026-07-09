@@ -14,7 +14,7 @@ Routes:
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, verify_device_auth
 from app.database.mongodb import get_db
 from app.schemas.sensor_data import SensorDataCreateRequest, SensorDataResponse
 from app.services.sensor_data_service import SensorDataService
@@ -34,7 +34,7 @@ router = APIRouter(prefix="/sensor-data", tags=["Sensor Data"])
 )
 async def ingest_sensor_data(
     request: SensorDataCreateRequest,
-    current_user: dict = Depends(get_current_user),
+    device_auth: dict = Depends(verify_device_auth),
     db: AsyncIOMotorDatabase = Depends(get_db),
 ):
     """
@@ -51,6 +51,13 @@ async def ingest_sensor_data(
         "timestamp": "auto"
     }
     """
+    # Ensure the device ID in the payload matches the authenticated device
+    if request.device_id != device_auth.get("device_id"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Payload device_id does not match authenticated device.",
+        )
+
     service = SensorDataService(db)
     try:
         return await service.ingest_sensor_data(request)

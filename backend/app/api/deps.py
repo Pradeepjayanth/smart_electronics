@@ -15,8 +15,9 @@ Usage in routes:
 """
 
 from bson import ObjectId
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Header
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security.api_key import APIKeyHeader
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.security import decode_access_token
@@ -155,3 +156,39 @@ def require_roles(*allowed_roles: str):
         return current_user
 
     return role_checker
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+async def verify_device_auth(
+    x_api_key: str = Depends(api_key_header),
+    x_device_token: str | None = Header(default=None, alias="X-Device-Token"),
+    x_device_secret: str | None = Header(default=None, alias="X-Device-Secret"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+) -> dict:
+    """
+    Verify ESP32 hardware device credentials before accepting data.
+    Requires X-API-Key, X-Device-Token, and X-Device-Secret headers.
+    """
+    if not x_api_key or not x_device_token or not x_device_secret:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing device authentication headers.",
+        )
+
+    device = await db.devices.find_one({
+        "api_key": x_api_key,
+        "device_token": x_device_token,
+        "device_secret": x_device_secret,
+        "status": {"$ne": "inactive"}
+    })
+
+    if not device:
+        logger.warning(f"Failed device auth attempt with token {x_device_token}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid device credentials or inactive device.",
+        )
+
+    device["_id"] = str(device["_id"])
+    return device
+

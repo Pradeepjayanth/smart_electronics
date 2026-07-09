@@ -38,6 +38,12 @@ class SensorDataCreateRequest(BaseModel):
     vibration: float = Field(
         ..., description="Vibration in g (0 to 50)",
     )
+    power_fluctuation: float = Field(
+        default=0.0, description="Power fluctuation in % (0 to 100)"
+    )
+    operating_hours: float = Field(
+        default=0.0, description="Total cumulative operating hours"
+    )
     timestamp: Optional[str] = Field(
         default=None,
         description="ISO format timestamp. Auto-generated if 'auto' or omitted.",
@@ -87,6 +93,22 @@ class SensorDataCreateRequest(BaseModel):
             raise ValueError("Vibration must be between 0 and 50 g")
         return v
 
+    @field_validator("power_fluctuation")
+    @classmethod
+    def validate_power_fluctuation(cls, v: float) -> float:
+        """Power fluctuation must be between 0% and 100%."""
+        if not 0 <= v <= 100:
+            raise ValueError("Power fluctuation must be between 0 and 100 %")
+        return v
+
+    @field_validator("operating_hours")
+    @classmethod
+    def validate_operating_hours(cls, v: float) -> float:
+        """Operating hours must be non-negative."""
+        if v < 0:
+            raise ValueError("Operating hours must be >= 0")
+        return v
+
     @field_validator("timestamp")
     @classmethod
     def validate_timestamp(cls, v: Optional[str]) -> Optional[str]:
@@ -105,6 +127,8 @@ class SensorDataResponse(BaseModel):
     voltage: float
     current: float
     vibration: float
+    power_fluctuation: float
+    operating_hours: float
     timestamp: datetime
     source: str
     created_at: datetime

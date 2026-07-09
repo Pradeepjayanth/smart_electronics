@@ -8,13 +8,9 @@ If the model is not found or fails to load, gracefully falls back
 to the rule-based MockPredictor.
 """
 
-import os
-from pathlib import Path
-
-import joblib
-
 from app.config import get_settings
 from app.ml.mock_model import MockPredictor
+from app.ml.model_loader import ModelLoader
 from app.utils.logger import logger
 
 
@@ -25,29 +21,13 @@ class Predictor:
 
     def __init__(self):
         self.settings = get_settings()
-        self.model_path = Path(self.settings.ML_MODEL_PATH)
-        self.model = None
+        self.loader = ModelLoader()
         self.mock_predictor = MockPredictor()
-        self._load_model()
+        self.model, self.framework, self.version = self.loader.load_latest_model()
 
     def _load_model(self) -> None:
-        """
-        Attempt to load the scikit-learn model from disk.
-        Logs a warning if unavailable, which triggers fallback usage.
-        """
-        try:
-            if self.model_path.exists():
-                self.model = joblib.load(self.model_path)
-                logger.info(f"ML model loaded successfully from {self.model_path}")
-            else:
-                logger.warning(
-                    f"ML model not found at {self.model_path}. "
-                    f"Falling back to rule-based MockPredictor."
-                )
-        except Exception as e:
-            logger.error(f"Failed to load ML model: {e}")
-            logger.warning("Falling back to rule-based MockPredictor.")
-            self.model = None
+        """Reload model using ModelLoader."""
+        self.model, self.framework, self.version = self.loader.load_latest_model()
 
     def predict(self, sensor_data: dict) -> dict:
         """

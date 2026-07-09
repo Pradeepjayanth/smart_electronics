@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     MONGODB_URI: str = "mongodb://localhost:27017"
     MONGODB_DB_NAME: str = "smart_electronics"
 
+    # --- Redis (Optional Caching) ---
+    REDIS_URI: str = "redis://localhost:6379/0"
+    REDIS_ENABLED: bool = False
+
     # --- JWT Authentication ---
     JWT_SECRET_KEY: str = "your-super-secret-key-change-in-production"
     JWT_ALGORITHM: str = "HS256"

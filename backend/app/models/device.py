@@ -21,6 +21,9 @@ def create_device_document(
     firmware_version: str = "",
     installation_date: str | None = None,
     warranty_expiry: str | None = None,
+    api_key: str = "",
+    device_token: str = "",
+    device_secret: str = "",
 ) -> dict:
     """
     Create a new device document for MongoDB insertion.
@@ -42,6 +45,13 @@ def create_device_document(
         A dict representing the device document.
     """
     now = datetime.now(timezone.utc)
+    import secrets
+    
+    # Auto-generate credentials if not provided
+    final_api_key = api_key or secrets.token_urlsafe(32)
+    final_token = device_token or secrets.token_hex(16)
+    final_secret = device_secret or secrets.token_urlsafe(48)
+    
     return {
         "device_id": device_id,
         "name": name,
@@ -57,6 +67,9 @@ def create_device_document(
         "status": "active",  # active, warning, critical, inactive, maintenance
         "health_score": 100.0,
         "last_data_received": None,
+        "api_key": final_api_key,
+        "device_token": final_token,
+        "device_secret": final_secret,
         "created_at": now,
         "updated_at": now,
     }

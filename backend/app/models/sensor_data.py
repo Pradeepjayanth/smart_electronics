@@ -16,6 +16,8 @@ def create_sensor_data_document(
     voltage: float,
     current: float,
     vibration: float,
+    power_fluctuation: float = 0.0,
+    operating_hours: float = 0.0,
     timestamp: datetime | None = None,
     source: str = "simulator",
 ) -> dict:
@@ -32,6 +34,8 @@ def create_sensor_data_document(
         voltage: Voltage in V (0 to 500).
         current: Current in A (0 to 100).
         vibration: Vibration in g (0 to 50).
+        power_fluctuation: Power fluctuation in %.
+        operating_hours: Total operating hours.
         timestamp: Reading timestamp (defaults to now UTC).
         source: Data source identifier ("simulator", "esp32", "api").
 
@@ -45,6 +49,8 @@ def create_sensor_data_document(
         "voltage": voltage,
         "current": current,
         "vibration": vibration,
+        "power_fluctuation": power_fluctuation,
+        "operating_hours": operating_hours,
         "timestamp": timestamp or datetime.now(timezone.utc),
         "source": source,
         "created_at": datetime.now(timezone.utc),

@@ -76,8 +76,14 @@ class DeviceResponse(BaseModel):
     status: str
     health_score: float
     last_data_received: Optional[datetime] = None
+    api_key: str
     created_at: datetime
     updated_at: datetime
+
+class DeviceRegistrationResponse(DeviceResponse):
+    """Schema returned only once upon successful registration, containing secrets."""
+    device_token: str = Field(..., description="Token for the ESP32 device")
+    device_secret: str = Field(..., description="Secret key for the ESP32 device (Show once!)")
 
 
 class DeviceSearchQuery(BaseModel):

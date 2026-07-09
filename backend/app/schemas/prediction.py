@@ -32,6 +32,19 @@ class PredictionResponse(BaseModel):
     )
     root_cause: str = Field(..., description="Identified root cause")
     recommendation: str = Field(..., description="Maintenance recommendation")
+    
+    # --- Predictive Maintenance Engine ---
+    maintenance_schedule: str = Field(default="Routine", description="Suggested maintenance schedule")
+    recommended_spare_parts: list[str] = Field(default_factory=list, description="Parts likely needed")
+    maintenance_priority: str = Field(default="Low", description="Priority: Low, Medium, High, Critical")
+    expected_failure_date: Optional[str] = Field(None, description="ISO format date of expected failure")
+    estimated_repair_cost: float = Field(default=0.0, description="Estimated cost in USD")
+    downtime_estimation: float = Field(default=0.0, description="Estimated downtime in hours")
+
+    # --- Environmental Analysis ---
+    environment_score: float = Field(default=100.0, ge=0.0, le=100.0, description="Operating environment score (0-100)")
+    safe_operating_suggestions: list[str] = Field(default_factory=list, description="Suggestions for better environment")
+
     sensor_data_id: str
     model_version: str
     created_at: datetime

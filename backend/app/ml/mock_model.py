@@ -11,6 +11,7 @@ This module is also useful for testing and development.
 """
 
 import random
+from datetime import datetime, timedelta, timezone
 
 
 class MockPredictor:
@@ -150,6 +151,44 @@ class MockPredictor:
             else "No significant anomalies detected"
         )
         recommendation = self.RECOMMENDATIONS[risk_level]
+        
+        # --- Predictive Maintenance Engine ---
+        maintenance_schedule = {
+            "low": "Routine",
+            "medium": "Preventive",
+            "high": "Urgent",
+            "critical": "Emergency"
+        }[risk_level]
+        
+        spare_parts_map = {
+            "temperature": ["Thermal Paste", "Cooling Fan"],
+            "humidity": ["Silica Gel Packs", "Gasket Seal"],
+            "voltage": ["Voltage Regulator", "Capacitor"],
+            "current": ["Fuse", "Wiring Harness"],
+            "vibration": ["Bearing", "Mounting Bracket"]
+        }
+        recommended_spare_parts = spare_parts_map.get(worst_sensor, []) if worst_score > 0.3 else []
+        
+        maintenance_priority = risk_level.capitalize()
+        expected_failure_date = (datetime.now(timezone.utc) + timedelta(hours=rul)).isoformat()
+        estimated_repair_cost = round(random.uniform(50, 500) * (1.0 + failure_probability), 2)
+        downtime_estimation = round(random.uniform(2, 48) * failure_probability, 1)
+
+        # --- Environmental Analysis ---
+        # Evaluate power fluctuation and operating hours
+        power_fluctuation = sensor_data.get("power_fluctuation", 0.0)
+        operating_hours = sensor_data.get("operating_hours", 0.0)
+        
+        env_score_penalty = (power_fluctuation * 0.5) + (temp_risk * 20) + (humid_risk * 15)
+        environment_score = round(max(0.0, min(100.0, 100.0 - env_score_penalty)), 1)
+        
+        safe_operating_suggestions = []
+        if temp_risk > 0.5:
+            safe_operating_suggestions.append("Improve cooling and ventilation.")
+        if humid_risk > 0.5:
+            safe_operating_suggestions.append("Install dehumidifiers in the operating area.")
+        if power_fluctuation > 10.0:
+            safe_operating_suggestions.append("Install an Uninterruptible Power Supply (UPS) or line conditioner.")
 
         return {
             "failure_probability": round(failure_probability, 4),
@@ -159,6 +198,14 @@ class MockPredictor:
             "remaining_useful_life": rul,
             "root_cause": root_cause,
             "recommendation": recommendation,
+            "maintenance_schedule": maintenance_schedule,
+            "recommended_spare_parts": recommended_spare_parts,
+            "maintenance_priority": maintenance_priority,
+            "expected_failure_date": expected_failure_date,
+            "estimated_repair_cost": estimated_repair_cost,
+            "downtime_estimation": downtime_estimation,
+            "environment_score": environment_score,
+            "safe_operating_suggestions": safe_operating_suggestions,
         }
 
     @staticmethod
