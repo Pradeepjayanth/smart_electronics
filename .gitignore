@@ -1,0 +1,20 @@
+# Python environments
+venv/
+env/
+.env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest cache
+.pytest_cache/
+
+# Logs
+*.log
+
+# Models (optional to ignore, but usually a good idea if they get large)
+# For this project, we'll keep the models so others can test, but normally you'd ignore:
+# *.pkl
+# *.joblib
