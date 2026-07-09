@@ -1,1 +1,1 @@
-# Keep this directory in git
+pip freeze > requirements.txt# Keep this directory in git
